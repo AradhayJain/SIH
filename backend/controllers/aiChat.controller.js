@@ -36,30 +36,42 @@ export const getAIChats = async (req, res) => {
 /**
  * Send message to AI
  */
-export const sendAIMessage = async (req, res) => {
-  const { chatId, content } = req.body;
-
-  try {
-    // Save user’s message
-    const userMsg = await AIMessage.create({
-      chat: chatId,
-      sender: "user",
-      content,
-    });
-
-    await AIChat.findByIdAndUpdate(chatId, {
-      latestMessage: content,
-      updatedAt: Date.now(),
-    });
-
-    res.status(201).json({
-      userMessage: userMsg,
-      aiMessage: aiMsg,
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error in AI message flow", error: error.message });
-  }
-};
+export const saveAIMessage = async (req, res) => {
+    const { chatId, prompt, response } = req.body;
+  
+    try {
+      // Save user message
+      const userMsg = await AIMessage.create({
+        chat: chatId,
+        sender: "user",
+        content: prompt,
+      });
+  
+      // Save AI message
+      const aiMsg = await AIMessage.create({
+        chat: chatId,
+        sender: "ai",
+        content: response,
+      });
+  
+      // Update chat with latest AI response
+      await AIChat.findByIdAndUpdate(chatId, {
+        latestMessage: response,
+        updatedAt: Date.now(),
+      });
+  
+      res.status(201).json({
+        message: "Messages saved successfully",
+        userMessage: userMsg,
+        aiMessage: aiMsg,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Error saving AI messages",
+        error: error.message,
+      });
+    }
+  };
 
 /**
  * Get all messages in an AI chat

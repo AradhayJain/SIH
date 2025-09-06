@@ -54,14 +54,9 @@ export default function socketHandler(io) {
 
         console.log("🤖 Category:", parsedCategory);
 
-        let finalResponse = "";
-
-        if (parsedCategory.category === "data_query") {
-          const { data } = await axios.post("http://ml-service/api/query", { message });
-          finalResponse = data.answer || "No data found.";
-        } else {
-          finalResponse = await googleGenAi(message);
-        }
+        const { data } = await axios.post("http://localhost:5000/query", { message , category:parsedCategory.category });
+        const finalResponse = data.response || "No data found.";
+        
 
         // Send back response
         io.to(chatId).emit("newMessage", {

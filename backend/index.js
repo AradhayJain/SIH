@@ -6,7 +6,7 @@ import { Server } from "socket.io";
 
 import userRoutes from "./routes/user.routes.js";
 import MongoDB from "./database/MongoDb.js";
-import ConnectPost from "./database/postGres.js";
+import {ConnectPost} from "./database/postGres.js";
 import socketHandler from "./socket.js";
 import chatRoutes from "./routes/aiChat.routes.js";
 

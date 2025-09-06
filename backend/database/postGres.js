@@ -1,29 +1,22 @@
-// db-connection.js
-
+// postGres.js
 import dotenv from "dotenv";
-dotenv.config({});
-
 import { Pool } from "pg";
 
-// Create a connection pool using DATABASE_URL from .env
+dotenv.config();
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-// Test connection
+// Test the connection once when app starts
 async function ConnectPost() {
-  let client;
   try {
-    console.log('Connecting to the database as "Aditya sahu"...');
-    client = await pool.connect();
-    console.log("✅ Connection successful.");
+    const client = await pool.connect();
+    console.log("✅ PostgreSQL connected.");
+    client.release(); // release back to pool (do NOT end the pool)
   } catch (error) {
-    console.error("❌ Error connecting to database:", error.message);
-  } finally {
-    if (client) client.release();
-    await pool.end();
-    console.log("Connection pool closed.");
+    console.error("❌ Error connecting to PostgreSQL:", error.message);
   }
 }
 
-export default ConnectPost;
+export { pool, ConnectPost };
