@@ -1,7 +1,7 @@
 # utils.py
 from sentence_transformers import SentenceTransformer
-from psycopg2.extensions import connection
-
+import os
+import psycopg2
 
 # Load the embedding model once (global, not per request)
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -16,18 +16,28 @@ def format_context(results):
     return "\n".join(formatted)
 
 
-def fetch_rag_context(prompt: str,conn:connection) -> str:
+def fetch_rag_context(prompt: str) -> str:
     """
     Given a user prompt, generate embedding, query pgvector, and return top-k context chunks.
     """
     
     context = None
+    cursor=None
+    conn=None
 
     try:
         # 1. Generate embedding for the user query
         query_embedding = model.encode(prompt)
         embedding_str = str(query_embedding.tolist())
 
+        conn = psycopg2.connect(
+            host=os.getenv("SUPABASE_DB_HOST"),
+            port=os.getenv("SUPABASE_DB_PORT"),
+            dbname=os.getenv("SUPABASE_DB_NAME"),
+            user=os.getenv("SUPABASE_DB_USER"),
+            password=os.getenv("SUPABASE_DB_PASSWORD"),
+            sslmode='require'
+        )
         cursor = conn.cursor()
 
         # 3. Perform similarity search in pgvector
@@ -48,7 +58,6 @@ def fetch_rag_context(prompt: str,conn:connection) -> str:
 
     finally:
         if cursor: cursor.close()
-        if conn: conn.close()
 
     # Return concatenated context for the LLM
     if context:
@@ -58,6 +67,6 @@ def fetch_rag_context(prompt: str,conn:connection) -> str:
 
 
 
-def fetch_sql_context(prompt: str,conn:connection) -> str:
+def fetch_sql_context(prompt: str) -> str:
     # TODO: implement NL→SQL conversion + DB query
     return f"[SQL context placeholder for prompt: {prompt}]"
