@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Topbar from "./components/Common/topBar";
 import SideBar from "./components/Common/sideBar";
 import Dashboard from "./pages/DashBoard/dashboard";
@@ -8,22 +8,24 @@ import { colorModeContext, useMode } from "./themes";
 import MapPage from "./pages/MapPage/mapPage";
 import Chat from "./pages/Chat/index";
 import Profile from "./pages/Profile/index";
+import LandingPage from "./pages/LandingPage";
 
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const isMobile = useMediaQuery("(max-width:900px)");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   return (
     <colorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <Box sx={{ display: "flex", height: "100vh" }}>
+        {isAuthenticated ? (
+        <Box sx={{ display: "flex", height: "100vh", overflow: "hidden" }}>
           {/* Sidebar */}
           <SideBar
             open={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
-            variant={isMobile ? "temporary" : "permanent"}
+            
           />
 
           {/* Main Content Area */}
@@ -34,7 +36,6 @@ function App() {
               height: "100vh",
               display: "flex",
               flexDirection: "column",
-              ml: isMobile ? 0 : (isSidebarOpen ? "250px" : "0px"), // push only on desktop
               transition: "margin-left 0.3s ease",
             }}
           >
@@ -50,14 +51,21 @@ function App() {
               }}
             >
               <Routes>
-                <Route path="/" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Box>
           </Box>
         </Box>
+        ) : (
+          <Routes>
+            <Route path="/" element={<LandingPage setIsAuthenticated={setIsAuthenticated} />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        )}
       </ThemeProvider>
     </colorModeContext.Provider>
   );

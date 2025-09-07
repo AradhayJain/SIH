@@ -137,8 +137,8 @@ const Chat = () => {
                     borderRadius: 3,
                     backgroundColor: message.sender === "user" 
                       ? colors.blue[500] 
-                      : colors.primary[600],
-                    color: message.sender === "user" ? "#fff" : colors.grey[100],
+                      : theme.palette.mode === 'dark' ? colors.primary[600] : colors.primary[200],
+                    color: message.sender === "user" ? "#fff" : colors.grey[theme.palette.mode === 'dark' ? 100 : 900],
                   }}
                 >
                   <Typography variant="body1">{message.text}</Typography>
@@ -147,7 +147,7 @@ const Chat = () => {
                     sx={{ 
                       display: "block", 
                       textAlign: "right",
-                      color: message.sender === "user" ? "rgba(255,255,255,0.7)" : colors.grey[400],
+                      color: message.sender === "user" ? colors.grey[900] : colors.grey[500],
                       mt: 1
                     }}
                   >

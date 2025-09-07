@@ -24,7 +24,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
     <MenuItem
       active={selected === title}
       style={{
-        color: selected === title ? colors.blue[500] : colors.blue[theme.palette.mode === 'dark' ? colors.blue[500] : colors.blue[500]],
+        color: colors.primary[600],
       }}
       onClick={handleClick}
       icon={icon}
@@ -44,35 +44,42 @@ const SideBar = () => {
     <Box
       sx={{
         height: "100%",
-        position: "fixed",
+        position: "sticky",
         left: 0,
         top: 0,
         zIndex: 1000,
         "& .pro-sidebar": {
-          backgroundColor: `${theme.palette.background.default} !important`,
+          backgroundColor: `${colors.blue[400]} !important`,
+          borderRight: `1px solid ${colors.blue[300]}`,
+          boxShadow: theme.palette.mode === 'dark' 
+            ? '2px 0 10px 0 rgba(235, 219, 219, 0.1)' 
+            : '2px 0 10px 0 rgba(0, 0, 0, 0.1)',
         },
         "& .pro-sidebar-inner": {
           height: "100% !important",
-          background: `${theme.palette.background.default} !important`,
+          background: `${colors.blue[400]} !important`,
           overflow: "hidden !important",
         },
         "& .pro-icon-wrapper": {
           backgroundColor: "transparent !important",
-          color: `${theme.palette.mode === 'dark' ? colors.blue[500] : colors.blue[500]} !important`,
         },
         "& .pro-menu-item": {
-          color: `${theme.palette.mode === 'dark' ? colors.blue[500] : colors.blue[500]} !important`,
+          color: `${colors.blue[800]} !important`,
+          fontSize: "14px !important",
+          fontWeight: "500 !important",
         },
         "& .pro-inner-item": {
-          padding: "5px 35px 5px 20px !important",
-          color: `${theme.palette.mode === 'dark' ? colors.blue[500] : colors.blue[500]} !important`,
+          padding: "8px 35px 8px 20px !important",
+          margin: "2px 0 !important",
         },
         "& .pro-inner-item:hover": {
           color: `${colors.blue[500]} !important`,
+          backgroundColor: `${theme.palette.mode === 'dark' ? colors.primary[200] : colors.primary[500]} !important`,
         },
         "& .pro-menu-item.active": {
           color: `${colors.blue[500]} !important`,
-          backgroundColor: `${theme.palette.mode === 'dark' ? colors.blue[500] : colors.blue[500]} !important`,
+          backgroundColor: `${theme.palette.mode === 'dark' ? colors.primary[200] : colors.primary[500]} !important`,
+          fontweight:"600 !important"
         },
         "& .pro-sidebar.collapsed": {
           width: "80px !important",
@@ -98,11 +105,21 @@ const SideBar = () => {
                 alignItems="center"
                 ml="15px"
               >
-                <Typography variant="h3" color={colors.blue[500]}>
-                  FLOATCHAT
-                </Typography>
+                <Typography 
+                  variant="h1" 
+                  sx={{ 
+                    fontWeight: 'bold',
+                    fontSize: '2.0rem',
+                    background: `linear-gradient(135deg, ${colors.blue[600]}, ${colors.green[600]})`,
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    color: 'transparent'
+                    }}
+                  >
+                  FloatChat
+                  </Typography>
                 <IconButton onClick={() => setIsCollapsed(!isCollapsed)}
-                  sx={{ color: colors.grey[700]}}
+                  sx={{ color: colors.primary[600]}}
                 >
                   <MenuOutlinedIcon />
                 </IconButton>
@@ -110,7 +127,7 @@ const SideBar = () => {
             )}
           </MenuItem>
 
-          <Box paddingLeft={isCollapsed ? undefined : "10%"}>
+          <Box paddingLeft={isCollapsed ? undefined : "10%"} paddingRight={isCollapsed ? undefined : "10%"}>
             <Item
               title="DASHBOARD"
               to="/"
@@ -139,6 +156,7 @@ const SideBar = () => {
             position: "absolute",
             bottom: 20,
             left: isCollapsed ? 0 : "10%",
+            width: isCollapsed ? "100%" : "80%"
           }}
           >
             <Item

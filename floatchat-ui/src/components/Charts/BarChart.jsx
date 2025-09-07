@@ -12,6 +12,15 @@ const BarChart = ({ isDashboard = false }) => {
       data={data}
       theme={{
         // added
+        tooltip: {
+          container: {
+            background: theme.palette.mode === 'dark' ? colors.primary[700] : colors.primary[100],
+            color: theme.palette.mode === 'dark' ? colors.grey[100] : colors.grey[900],
+            fontSize: '12px',
+            borderRadius: '4px',
+            boxShadow: '0 3px 9px rgba(0, 0, 0, 0.5)',
+          },
+        },
         axis: {
           domain: {
             line: {

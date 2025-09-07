@@ -19,6 +19,21 @@ const Dashboard = () => {
   const isTablet = useMediaQuery("(max-width:1200px)");
   const isMobile = useMediaQuery("(max-width:768px)");
 
+  const isDarkMode = theme.palette.mode === 'dark';
+  const shadowColor = isDarkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0.2, 0, 0.3)';
+  const hoverShadowColor = isDarkMode ? 'rgba(255, 255, 255, 0.35)' : 'rgba(0, 0.2, 0, 0.5)'
+
+  const boxStyle = {
+  backgroundColor: colors.primary[400],
+  transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
+  boxShadow: `0 6px 25px 0 ${shadowColor}`,
+  '&:hover': {
+    transform: 'translateY(-5px) scale(1.02)', 
+    boxShadow: `0 15px 30px 0 ${hoverShadowColor}`,
+    zIndex: 2, 
+  }
+};
+
   return (
     <Box m={{ xs: "10px", sm: "15px", md: "20px" }}>
       {/* HEADER */}
@@ -59,7 +74,7 @@ const Dashboard = () => {
         mt={2}
       >
         {/* ROW 1 */}
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center" sx={boxStyle}>
           <StatBox
             title="Salinity"
             subtitle="1400 ppt"
@@ -68,7 +83,7 @@ const Dashboard = () => {
             icon={<WaterIcon sx={{ color: colors.green[600], fontSize: "26px" }} />}
           />
         </Box>
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center" sx={boxStyle}>
           <StatBox
             title="Temperature"
             subtitle="45 C"
@@ -77,7 +92,7 @@ const Dashboard = () => {
             icon={<ThermostatIcon sx={{ color: colors.green[600], fontSize: "26px" }} />}
           />
         </Box>
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center" sx={boxStyle}>
           <StatBox
             title="Pressure"
             subtitle="200 pascal"
@@ -86,7 +101,7 @@ const Dashboard = () => {
             icon={<AirIcon sx={{ color: colors.green[600], fontSize: "26px" }} />}
           />
         </Box>
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 3" : "span 3"} backgroundColor={colors.primary[400]} display="flex" alignItems="center" justifyContent="center" sx={boxStyle}>
           <StatBox
             title="Density"
             subtitle="Increase"
@@ -97,7 +112,7 @@ const Dashboard = () => {
         </Box>
 
         {/* ROW 2 */}
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 8"} gridRow="span 2" backgroundColor={colors.primary[400]}>
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 8"} gridRow="span 2" backgroundColor={colors.primary[400]} sx={boxStyle}>
           <Box mt="25px" p={{ xs: "0 15px", sm: "0 20px", md: "0 30px" }} display="flex" justifyContent="space-between" alignItems="center">
             <Box>
               <Typography variant="h5" fontWeight="600" color={colors.grey[100]}>
@@ -118,7 +133,7 @@ const Dashboard = () => {
           </Box>
         </Box>
 
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} overflow="auto">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} overflow="auto" sx={boxStyle}>
           <Box display="flex" justifyContent="space-between" alignItems="center" borderBottom={`4px solid ${colors.primary[500]}`} p="15px">
             <Typography color={colors.grey[100]} variant="h5" fontWeight="600">
               Nearest AGRO
@@ -141,7 +156,7 @@ const Dashboard = () => {
         </Box>
 
         {/* ROW 3 */}
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} p="20px">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} p="20px" sx={boxStyle}>
           <Typography variant="h5" fontWeight="600">
             Satellite Data
           </Typography>
@@ -154,7 +169,7 @@ const Dashboard = () => {
           </Box>
         </Box>
 
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]}>
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} sx={boxStyle}>
           <Typography variant="h5" fontWeight="600" sx={{ padding: "20px 20px 0 20px" }}>
             Selected Water Bodies
           </Typography>
@@ -163,7 +178,7 @@ const Dashboard = () => {
           </Box>
         </Box>
 
-        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} p="20px">
+        <Box gridColumn={isMobile ? "span 1" : isTablet ? "span 6" : "span 4"} gridRow="span 2" backgroundColor={colors.primary[400]} p="20px" sx={boxStyle}>
           <Typography variant="h5" fontWeight="600" sx={{ marginBottom: "15px" }}>
             Map Based Tracker
           </Typography>
