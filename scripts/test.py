@@ -45,7 +45,6 @@ try:
 
     cursor.execute(search_query, (embedding_str, embedding_str))
     results = cursor.fetchall()
-
     print(f"\nTop 3 results for the query: '{user_query}'")
     for row in results:
         content = row[0]

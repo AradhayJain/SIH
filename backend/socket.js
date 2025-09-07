@@ -54,17 +54,49 @@ export default function socketHandler(io) {
 
         console.log("🤖 Category:", parsedCategory);
 
-        const { data } = await axios.post("http://localhost:5000/query", { message , category:parsedCategory.category });
-        const finalResponse = data.response || "No data found.";
-        
+        let knowledgeQueryResponse = null;
+        // let dataQueryResponse = null;
 
+        const { data } = await axios.post("http://localhost:5000/query", { message , category:parsedCategory.category });
+        const finalResponse = data || "No data found.";
+        if(parsedCategory.category === "data"){
+          console.log("📊 Data query response:", finalResponse);
+          io.to(chatId).emit("newMessage", {
+            sender: "assistant",
+            content: finalResponse,
+            chatId,
+            timestamp: new Date(),
+          });
+        }
+        else {
+          const retrievedContext = finalResponse.context; 
+          const userQuestion = message;
+      
+        
+          const professionalPrompt = `
+              You are an expert Oceanographic Data Assistant. Your task is to answer the user's question based *only* on the provided context. If the context does not contain the answer, state that the information is not available. Be concise and professional.
+      
+              ## Context:
+              ${retrievedContext}
+      
+              ## User's Question:
+              ${userQuestion}
+      
+              ## Your Answer:
+          `;
+      
+          // Make the final call to the Gemini API
+          knowledgeQueryResponse = await googleGenAi(professionalPrompt);
+      
+          // Emit the final, well-formatted answer
+          io.to(chatId).emit("newMessage", {
+              sender: "assistant",
+              content: knowledgeQueryResponse,
+              chatId,
+              timestamp: new Date(),
+          });
+      }
         // Send back response
-        io.to(chatId).emit("newMessage", {
-          sender: "assistant",
-          content: finalResponse,
-          chatId,
-          timestamp: new Date(),
-        });
       } catch (error) {
         console.error("❌ Socket error:", error.message);
         io.to(chatId).emit("newMessage", {
