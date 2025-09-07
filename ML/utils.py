@@ -2,6 +2,9 @@
 from sentence_transformers import SentenceTransformer
 import os
 import psycopg2
+import requests
+OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434/api/generate")
+# ollama pull hf.co/mradermacher/Qwen-2.5-3b-Text_to_SQL-GGUF:Q4_K_M
 
 # Load the embedding model once (global, not per request)
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -67,6 +70,118 @@ def fetch_rag_context(prompt: str) -> str:
 
 
 
+
+
+
+
+def call_ollama_for_sql(prompt: str) -> str:
+    """
+    Ask Ollama to generate a SQL SELECT query for the given NL prompt.
+    """
+    system_prompt = (
+        "You are an expert in making SQL queries related to the Indian AGRO float dataset. "
+        "Given a natural language question, generate a valid SQL query for PostgreSQL. "
+        "IMPORTANT RULES:\n"
+        "- Only generate SELECT statements.\n"
+        "- Never use INSERT, UPDATE, DELETE, DROP, ALTER, or other DML/DDL.\n"
+        "- Do not add explanations or comments.\n"
+        "- Just return the SQL query text."
+        "- The database has the following tables:\n"
+        """Table: profiles(
+                profile_id SERIAL PRIMARY KEY,
+                platform_number VARCHAR(10),   -- float ID
+                cycle_number INT,
+                data_mode CHAR(1),             -- R/A/D
+                timestamp TIMESTAMP,
+                latitude DOUBLE PRECISION,
+                longitude DOUBLE PRECISION,
+                position_qc SMALLINT,
+                juld_qc SMALLINT,
+            )"""
+        """Table: measurements(
+                measurement_id SERIAL PRIMARY KEY,
+                profile_id INT REFERENCES profiles(profile_id),
+                pressure DOUBLE PRECISION,
+                pressure_qc SMALLINT,
+                pressure_adj DOUBLE PRECISION,
+                pressure_adj_qc SMALLINT,
+                pressure_adj_error DOUBLE PRECISION,
+                temperature DOUBLE PRECISION,
+                temperature_qc SMALLINT,
+                temperature_adj DOUBLE PRECISION,
+                temperature_adj_qc SMALLINT,
+                temperature_adj_error DOUBLE PRECISION,
+                salinity DOUBLE PRECISION,
+                salinity_qc SMALLINT,
+                salinity_adj DOUBLE PRECISION,
+                salinity_adj_qc SMALLINT,
+                salinity_adj_error DOUBLE PRECISION
+            )"""
+    )
+   
+    payload = {
+        "model": "hf.co/mradermacher/Qwen-2.5-3b-Text_to_SQL-GGUF:Q4_K_M",  # adjust to whichever model you run in Ollama
+        "prompt": f"{system_prompt}\n\nQuestion: {prompt}",
+        "stream": False
+    }
+
+    response = requests.post(OLLAMA_URL, json=payload)
+    response.raise_for_status()
+    sql_query = response.json().get("response", "").strip()
+    # Clean up
+    if sql_query.startswith("SQL Query:\n"):
+        sql_query = sql_query[len("SQL Query:\n"):].strip()
+    print(sql_query)
+    # Safety guard
+    if not sql_query.strip().lower().startswith("select"):
+        raise ValueError(f"Unsafe SQL detected: {sql_query}")
+
+    return sql_query
+
+
+def format_sql_results(rows, columns):
+    """
+    Convert query results into an LLM-friendly context string.
+    """
+    if not rows:
+        return "No results found for this query."
+
+    formatted = ["Relevant data (from SQL query):\n"]
+    for row in rows:
+        row_dict = dict(zip(columns, row))
+        formatted.append("- " + ", ".join(f"{k}: {v}" for k, v in row_dict.items()))
+    return "\n".join(formatted)
+
+
 def fetch_sql_context(prompt: str) -> str:
-    # TODO: implement NL→SQL conversion + DB query
-    return f"[SQL context placeholder for prompt: {prompt}]"
+    """
+    NL → SQL (safe) → Results → LLM-friendly context
+    Opens/closes DB connection inside.
+    """
+    conn = None
+    try:
+        sql_query = call_ollama_for_sql(prompt)
+        print(sql_query)
+        return "sucess"
+
+        # conn = psycopg2.connect(
+        #     host=os.getenv("SUPABASE_DB_HOST"),
+        #     port=os.getenv("SUPABASE_DB_PORT"),
+        #     dbname=os.getenv("SUPABASE_DB_NAME"),
+        #     user=os.getenv("SUPABASE_DB_USER"),
+        #     password=os.getenv("SUPABASE_DB_PASSWORD"),
+        #     sslmode='require'
+        # )
+
+        # with conn.cursor() as cursor:
+        #     cursor.execute(sql_query)
+        #     rows = cursor.fetchall()
+        #     columns = [desc[0] for desc in cursor.description]
+
+        # return format_sql_results(rows, columns)
+    except Exception as e:
+        return f"[Error executing SQL: {e}]"
+
+    finally:
+        if conn:
+            conn.close()
