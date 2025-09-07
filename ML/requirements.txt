@@ -1,0 +1,19 @@
+# FastAPI server
+fastapi==0.115.0
+uvicorn==0.30.6
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.32
+pgvector==0.2.5   # optional helper for pgvector
+
+# Embeddings + ML
+sentence-transformers==3.1.0
+torch==2.4.1
+transformers==4.44.2
+
+# Environment management
+python-dotenv==1.0.1
+
+# Caching (optional)
+redis==5.0.8
