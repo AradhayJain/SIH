@@ -89,9 +89,7 @@ def call_ollama_for_sql(prompt: str) -> str:
         "- The database has the following tables:\n"
         """Table: profiles(
                 profile_id SERIAL PRIMARY KEY,
-                platform_number VARCHAR(10),   -- float ID
                 cycle_number INT,
-                data_mode CHAR(1),             -- R/A/D
                 timestamp TIMESTAMP,
                 latitude DOUBLE PRECISION,
                 longitude DOUBLE PRECISION,
@@ -161,15 +159,15 @@ def fetch_sql_context(prompt: str) -> str:
     conn = None
     try:
         sql_query = call_ollama_for_sql(prompt)
-        # print(sql_query)
+        print(sql_query)
         # return "sucess"
 
         conn = psycopg2.connect(
             host=os.getenv("SUPABASE_DB_HOST"),
             port=os.getenv("SUPABASE_DB_PORT"),
             dbname=os.getenv("SUPABASE_DB_NAME"),
-            user=os.getenv("SUPABASE_DB_USER"),
-            password=os.getenv("SUPABASE_DB_PASSWORD"),
+            user=os.getenv("SIH_DB_USER"),
+            password=os.getenv("SIH_DB_PASSWORD"),
             sslmode='require'
         )
 
