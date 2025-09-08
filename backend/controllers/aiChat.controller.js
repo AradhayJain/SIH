@@ -37,7 +37,7 @@ export const getAIChats = async (req, res) => {
  * Send message to AI
  */
 export const saveAIMessage = async (req, res) => {
-    const { chatId, prompt, response } = req.body;
+    const { chatId, prompt } = req.body;
   
     try {
       // Save user message
@@ -48,17 +48,17 @@ export const saveAIMessage = async (req, res) => {
       });
   
       // Save AI message
-      const aiMsg = await AIMessage.create({
-        chat: chatId,
-        sender: "ai",
-        content: response,
-      });
+      // const aiMsg = await AIMessage.create({
+      //   chat: chatId,
+      //   sender: "ai",
+      //   content: response,
+      // });
   
-      // Update chat with latest AI response
-      await AIChat.findByIdAndUpdate(chatId, {
-        latestMessage: response,
-        updatedAt: Date.now(),
-      });
+      // // Update chat with latest AI response
+      // await AIChat.findByIdAndUpdate(chatId, {
+      //   latestMessage: response,
+      //   updatedAt: Date.now(),
+      // });
   
       res.status(201).json({
         message: "Messages saved successfully",

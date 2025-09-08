@@ -1,3 +1,5 @@
+import { AIChat } from "./models/chat.model.js";
+import { AIMessage } from "./models/message.model.js";
 import googleGenAi from "./utils/Gemini.js";
 import axios from "axios";
 
@@ -29,12 +31,12 @@ export default function socketHandler(io) {
 
                 ## Categories:
 
-                1. **knowledge**: Use this category if the user is asking for a definition, an explanation, or a general factual question that can be answered from stored documents or general knowledge.
+                1. **KNOWLEDGE_QUERY**: Use this category if the user is asking for a definition, an explanation, or a general factual question that can be answered from stored documents or general knowledge.
                 * Example: "What is a BGC Argo float?"
                 * Example: "Explain what salinity is."
                 * Example: "Who manages the Argo program?"
 
-                2. **data**: Use this category if the user is asking for specific, quantifiable data points, trends, comparisons, or visualizations that must be retrieved by querying a structured database.
+                2. **DATA_QUERY**: Use this category if the user is asking for specific, quantifiable data points, trends, comparisons, or visualizations that must be retrieved by querying a structured database.
                 * Example: "Show me temperature profiles in the Indian Ocean in May 2024."
                 * Example: "Compare the salinity in the Arabian Sea vs. the Bay of Bengal."
                 * Example: "What is the trajectory of float 12345?"
@@ -57,9 +59,10 @@ export default function socketHandler(io) {
         let knowledgeQueryResponse = null;
         // let dataQueryResponse = null;
 
-        const { data } = await axios.post("http://localhost:5000/query", { message , category:parsedCategory.category });
+        const { data } = await axios.post("http://localhost:5000/query", { prompt:message , category:parsedCategory.category });
         const finalResponse = data || "No data found.";
-        if(parsedCategory.category === "data"){
+        console.log(finalResponse)
+        if(parsedCategory.category === "DATA_QUERY"){
           console.log("📊 Data query response:", finalResponse);
           io.to(chatId).emit("newMessage", {
             sender: "assistant",
@@ -74,7 +77,7 @@ export default function socketHandler(io) {
       
         
           const professionalPrompt = `
-              You are an expert Oceanographic Data Assistant. Your task is to answer the user's question based *only* on the provided context. If the context does not contain the answer, state that the information is not available. Be concise and professional.
+              You are an expert Oceanographic Data Assistant. Your task is to answer the user's question based  on the provided context points Also build up a strong answer based on the context and your knowledge. If the context does not contain the answer, state that the information is not available. Make it point wise.
       
               ## Context:
               ${retrievedContext}
@@ -87,6 +90,21 @@ export default function socketHandler(io) {
       
           // Make the final call to the Gemini API
           knowledgeQueryResponse = await googleGenAi(professionalPrompt);
+          // const aiMsg = await AIMessage.create({
+          //   chat: chatId,
+          //   sender: "assistant",
+          //   content: knowledgeQueryResponse,
+          // });
+
+          // await aiMsg.save();
+      
+          // // Update chat with latest AI response
+          // await AIChat.findByIdAndUpdate(chatId, {
+          //   latestMessage: knowledgeQueryResponse,
+          //   updatedAt: Date.now(),
+          // });
+
+          console.log(knowledgeQueryResponse)
       
           // Emit the final, well-formatted answer
           io.to(chatId).emit("newMessage", {

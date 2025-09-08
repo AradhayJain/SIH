@@ -161,24 +161,24 @@ def fetch_sql_context(prompt: str) -> str:
     conn = None
     try:
         sql_query = call_ollama_for_sql(prompt)
-        print(sql_query)
-        return "sucess"
+        # print(sql_query)
+        # return "sucess"
 
-        # conn = psycopg2.connect(
-        #     host=os.getenv("SUPABASE_DB_HOST"),
-        #     port=os.getenv("SUPABASE_DB_PORT"),
-        #     dbname=os.getenv("SUPABASE_DB_NAME"),
-        #     user=os.getenv("SUPABASE_DB_USER"),
-        #     password=os.getenv("SUPABASE_DB_PASSWORD"),
-        #     sslmode='require'
-        # )
+        conn = psycopg2.connect(
+            host=os.getenv("SUPABASE_DB_HOST"),
+            port=os.getenv("SUPABASE_DB_PORT"),
+            dbname=os.getenv("SUPABASE_DB_NAME"),
+            user=os.getenv("SUPABASE_DB_USER"),
+            password=os.getenv("SUPABASE_DB_PASSWORD"),
+            sslmode='require'
+        )
 
-        # with conn.cursor() as cursor:
-        #     cursor.execute(sql_query)
-        #     rows = cursor.fetchall()
-        #     columns = [desc[0] for desc in cursor.description]
+        with conn.cursor() as cursor:
+            cursor.execute(sql_query)
+            rows = cursor.fetchall()
+            columns = [desc[0] for desc in cursor.description]
 
-        # return format_sql_results(rows, columns)
+        return format_sql_results(rows, columns)
     except Exception as e:
         return f"[Error executing SQL: {e}]"
 
