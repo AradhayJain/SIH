@@ -118,7 +118,7 @@ def call_ollama_for_sql(prompt: str) -> str:
     )
    
     payload = {
-        "model": "hf.co/mradermacher/Qwen-2.5-3b-Text_to_SQL-GGUF:Q4_K_M",  # adjust to whichever model you run in Ollama
+        "model": "hf.co/tensorblock/NaturalSQL-6.7B-v0-GGUF:Q4_K_M",  # adjust to whichever model you run in Ollama
         "prompt": f"{system_prompt}\n\nQuestion: {prompt}",
         "stream": False
     }
@@ -129,7 +129,7 @@ def call_ollama_for_sql(prompt: str) -> str:
     # Clean up
     if sql_query.startswith("SQL Query:\n"):
         sql_query = sql_query[len("SQL Query:\n"):].strip()
-    print(sql_query)
+    # print(sql_query)
     # Safety guard
     if not sql_query.strip().lower().startswith("select"):
         raise ValueError(f"Unsafe SQL detected: {sql_query}")
