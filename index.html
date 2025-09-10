@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disaster Management Map</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+          crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
+    <style>
+        /* Custom styles for the dark theme */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+            background: #2d3748; /* bg-gray-800 */
+            color: #fff;
+            box-shadow: 0 3px 14px rgba(0,0,0,0.4);
+        }
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.5rem;
+        }
+        .leaflet-popup-close-button {
+            color: #fff !important;
+        }
+        .leaflet-container a {
+            color: #63b3ed; /* A nice blue for links */
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 h-screen p-4">
+        <!-- Sidebar -->
+        <div class="md:col-span-1 bg-gray-800 shadow-lg rounded-2xl p-4 flex flex-col">
+            <div class="flex-shrink-0">
+                <h2 class="text-xl font-bold mb-2">🌊 Disaster Management</h2>
+                <p class="text-sm text-gray-400 mb-4">
+                    Hazards detected from oceanographic data (Temperature, Pressure, Salinity).
+                </p>
+
+                <button id="toggleHazardsBtn" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition mb-4">
+                    Hide Hazards
+                </button>
+            </div>
+
+            <div id="hazardsList" class="space-y-2 overflow-y-auto flex-grow">
+                <!-- Hazard items will be injected here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div id="map" class="md:col-span-3 h-full w-full rounded-2xl"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const dataset = [
+                { id: 1, lat: 19.07, lon: 72.87, temperature: 29, pressure: 1005, salinity: 36 },
+                { id: 2, lat: 15.29, lon: 73.91, temperature: 27, pressure: 995, salinity: 35 },
+                { id: 3, lat: 13.08, lon: 80.27, temperature: 26, pressure: 1002, salinity: 38 },
+            ];
+
+            const detectHazards = (data) => {
+                return data
+                    .filter((d) => d.temperature > 28 || d.salinity > 37 || d.pressure < 1000)
+                    .map((d) => ({
+                        ...d,
+                        hazard:
+                            d.temperature > 28
+                                ? "High Temperature (Heatwave risk)"
+                                : d.salinity > 37
+                                ? "High Salinity (Marine life risk)"
+                                : "Low Pressure (Storm risk)",
+                    }));
+            };
+
+            const hazards = detectHazards(dataset);
+            let showHazards = true;
+            const hazardLayers = [];
+
+            // --- DOM Elements ---
+            const toggleBtn = document.getElementById('toggleHazardsBtn');
+            const hazardsListContainer = document.getElementById('hazardsList');
+            
+            // --- Map Initialization ---
+            const map = L.map('map').setView([18.5, 76], 5);
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            }).addTo(map);
+
+            // --- Functions ---
+            const renderHazards = () => {
+                // Clear previous layers from the map and list
+                hazardsListContainer.innerHTML = '';
+                hazardLayers.forEach(layer => map.removeLayer(layer));
+                hazardLayers.length = 0; // Clear the array
+
+                if (showHazards) {
+                    hazards.forEach(h => {
+                        // 1. Add hazard item to the sidebar list
+                        const hazardDiv = document.createElement('div');
+                        hazardDiv.className = 'p-3 rounded-lg border border-red-400/50 bg-red-900/20 text-red-300 font-medium';
+                        hazardDiv.innerHTML = `
+                            <span class="font-bold text-red-200">⚠ ${h.hazard}</span> <br />
+                            <span class="text-xs text-gray-400">Location: (${h.lat}, ${h.lon})</span>
+                        `;
+                        hazardsListContainer.appendChild(hazardDiv);
+
+                        // 2. Add hazard circle to the map
+                        const color = h.hazard.includes("Temperature") ? "#ef4444" : h.hazard.includes("Salinity") ? "#3b82f6" : "#f97316";
+                        const circle = L.circle([h.lat, h.lon], {
+                            radius: 50000,
+                            color: color,
+                            fillColor: color,
+                            fillOpacity: 0.3,
+                        }).addTo(map);
+
+                        const popupContent = `
+                            <div class="p-1">
+                                <strong class="text-base">Hazard:</strong> ${h.hazard} <br />
+                                🌡 Temp: ${h.temperature}°C <br />
+                                🧂 Salinity: ${h.salinity} PSU <br />
+                                ⬇ Pressure: ${h.pressure} hPa
+                            </div>
+                        `;
+                        circle.bindPopup(popupContent);
+                        hazardLayers.push(circle);
+                    });
+                }
+            };
+
+            // --- Event Listeners ---
+            toggleBtn.addEventListener('click', () => {
+                showHazards = !showHazards;
+                toggleBtn.textContent = showHazards ? 'Hide Hazards' : 'Show Hazards';
+                renderHazards();
+            });
+
+            // --- Initial Render ---
+            renderHazards();
+        });
+    </script>
+
+</body>
+</html>
+

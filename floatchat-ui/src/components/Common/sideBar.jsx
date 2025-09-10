@@ -149,6 +149,13 @@ const SideBar = () => {
               selected={selected}
               setSelected={setSelected}
             />
+             <Item
+              title="ANALYSIS PAGE"
+              to="/analysis"
+              icon={<ContactsOutlinedIcon />}
+              selected={selected}
+              setSelected={setSelected}
+            />
           </Box>
 
           <Box 
@@ -167,6 +174,7 @@ const SideBar = () => {
               setSelected={setSelected}
             /> 
             </Box>
+            
         </Menu>
       </Sidebar>
     </Box>

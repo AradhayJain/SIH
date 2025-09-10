@@ -79,13 +79,20 @@ def call_ollama_for_sql(prompt: str) -> str:
     Ask Ollama to generate a SQL SELECT query for the given NL prompt.
     """
     system_prompt = (
-        "You are an expert in making SQL queries related to the Indian AGRO float dataset. "
+        "You are an expert in making PostgreSQL queries related to the Indian AGRO float dataset. "
         "Given a natural language question, generate a valid SQL query for PostgreSQL. "
+        "GIVE ME PROFESSIONAL AND WELL WRITTEN QUERIES WCHICH ONLY CONTAINS RELEVANT DATA KEEP THIS IN MIND"
+
         "IMPORTANT RULES:\n"
         "- Only generate SELECT statements.\n"
+        "- u Can use group BY clauses if needed.\n"
         "- Never use INSERT, UPDATE, DELETE, DROP, ALTER, or other DML/DDL.\n"
         "- Do not add explanations or comments.\n"
         "- Just return the SQL query text."
+        "- use accurate columns for queries in measurements pressure temprature and salinity are the main columns\n"
+        "- use proper functions that exists for postgreSQL and given columns data types THIS IS VERY IMPORTANT LIKE DON'T USE MEDIAN(DOUBLE PRECISION)"
+        "- i repeat use proper functions for the query else sql is of no use"
+        "- If asked median use percentile_count function"
         "- The database has the following tables:\n"
         """Table: profiles(
                 profile_id SERIAL PRIMARY KEY,
@@ -93,27 +100,14 @@ def call_ollama_for_sql(prompt: str) -> str:
                 timestamp TIMESTAMP,
                 latitude DOUBLE PRECISION,
                 longitude DOUBLE PRECISION,
-                position_qc SMALLINT,
-                juld_qc SMALLINT,
             )"""
         """Table: measurements(
                 measurement_id SERIAL PRIMARY KEY,
                 profile_id INT REFERENCES profiles(profile_id),
-                pressure DOUBLE PRECISION,
-                pressure_qc SMALLINT,
-                pressure_adj DOUBLE PRECISION,
-                pressure_adj_qc SMALLINT,
-                pressure_adj_error DOUBLE PRECISION,
-                temperature DOUBLE PRECISION,
-                temperature_qc SMALLINT,
-                temperature_adj DOUBLE PRECISION,
-                temperature_adj_qc SMALLINT,
-                temperature_adj_error DOUBLE PRECISION,
+                pressure DOUBLE PRECISION,  
+                temperature DOUBLE PRECISION, 
                 salinity DOUBLE PRECISION,
-                salinity_qc SMALLINT,
-                salinity_adj DOUBLE PRECISION,
-                salinity_adj_qc SMALLINT,
-                salinity_adj_error DOUBLE PRECISION
+             
             )"""
     )
    

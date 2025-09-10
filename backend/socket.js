@@ -3,6 +3,29 @@ import { AIMessage } from "./models/message.model.js";
 import googleGenAi from "./utils/Gemini.js";
 import axios from "axios";
 
+function parseDataResponse(responseText) {
+  if (typeof responseText !== 'string') {
+    return []; // Return empty array if input is not a string
+  }
+  
+  const lines = responseText.split('\n').filter(line => line.trim().startsWith('-'));
+  const data = lines.map(line => {
+    const obj = {};
+    const entries = line.replace('-', '').trim().split(',');
+    
+    entries.forEach(entry => {
+      const [key, value] = entry.split(':').map(s => s.trim());
+      // Convert numeric values from string to number
+      obj[key] = isNaN(parseFloat(value)) ? value : parseFloat(value);
+    });
+    
+    return obj;
+  });
+  
+  return data;
+}
+
+
 export default function socketHandler(io) {
   io.on("connection", (socket) => {
     console.log("✅ A user connected:", socket.id);
@@ -60,13 +83,21 @@ export default function socketHandler(io) {
         // let dataQueryResponse = null;
 
         const { data } = await axios.post("http://localhost:5000/query", { prompt:message , category:parsedCategory.category });
-        const finalResponse = data || "No data found.";
+        let finalResponse = data || "No data found.";
         console.log(finalResponse)
-        if(parsedCategory.category === "DATA_QUERY"){
-          console.log("📊 Data query response:", finalResponse);
+        if (parsedCategory.category === "DATA_QUERY") {
+          // Parse the raw string response into clean JSON
+          const parsedData = parseDataResponse(finalResponse.context);
+          finalResponse = {...finalResponse, context: parsedData};
+
+        
+          console.log("📊 Parsed data for frontend:", parsedData);
+        
+          // Emit an object with a specific 'type' for the frontend to handle
           io.to(chatId).emit("newMessage", {
             sender: "assistant",
-            content: finalResponse,
+            content: parsedData, // Send the clean array
+            type: "DATA_QUERY",    // Add a type so the frontend knows this is for a chart
             chatId,
             timestamp: new Date(),
           });
@@ -110,6 +141,7 @@ export default function socketHandler(io) {
           io.to(chatId).emit("newMessage", {
               sender: "assistant",
               content: knowledgeQueryResponse,
+              type: "KNOWLEDGE_QUERY",
               chatId,
               timestamp: new Date(),
           });

@@ -9,6 +9,7 @@ import MapPage from "./pages/MapPage/mapPage";
 import Chat from "./pages/Chat/index";
 import Profile from "./pages/Profile/index";
 import LandingPage from "./pages/LandingPage";
+import Analysis from "./pages/Analysis";
 
 function App() {
   const [theme, colorMode] = useMode();
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/map" element={<MapPage />} />
                 <Route path="/chat" element={<Chat />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/analysis" element={<Analysis/>} />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </Box>
